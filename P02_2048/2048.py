@@ -14,6 +14,7 @@ import time
 import os
 import searchai    #for task 3
 import heuristicai #for task 2
+import csv
 
 def print_board(m):
     for row in m:
@@ -37,8 +38,8 @@ def to_score(m):
     return [[_to_score(c) for c in row] for row in m]
 
 def find_best_move(board):
-    return heuristicai.find_best_move_v3(board)
-    #return searchai.find_best_move(board)
+    #return heuristicai.find_best_move_v3(board)
+    return searchai.find_best_move(board)
 
 def movename(move):
     return ['up', 'down', 'left', 'right'][move]
@@ -67,6 +68,14 @@ def play_game(gamectrl):
     maxval = max(max(row) for row in to_val(board))
     print("Game over. Final score %d; highest tile %d." % (score, maxval))
 
+    fields = [moveno, score, maxval]
+    with open('search_stats.csv', 'a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(fields)
+
+
+
+    #exec(open("2048.py").read())
 def parse_args(argv):
     import argparse
 

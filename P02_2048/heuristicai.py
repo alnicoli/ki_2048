@@ -149,13 +149,69 @@ def find_best_move_v3(board):
 def find_best_move_random_agent():
     return random.choice([UP,DOWN,LEFT,RIGHT])
 
-def boardRanking(board):
+def logger(value):
+    if value == 0:
+        return 0
+    else:
+        return math.log(value) / math.log(2)
+
+def boardRanking_testing(board):
 
     positionRanking = 0
 
     for i in range(4):
         for j in range(4):
             positionRanking += abs(R[i][j] * board[i][j] * board[i][j])
+
+    penalty = 0
+    multiplikator = 2
+
+    points = 0
+
+    for i in range(4):
+        for j in range(4):
+            current = logger(board[i][j])
+
+            if j-1 >= 0:
+                penalty += abs(current - logger(board[i][j-1])) * multiplikator
+            if j+1 < 4:
+                penalty += abs(current - logger(board[i][j+1])) * multiplikator
+
+                if current == board[i][j+1] and board[i][j] != 0:
+                    points += 2*board[i][j]
+            if i-1 >= 0:
+                penalty += abs(current - logger(board[i-1][j])) * multiplikator
+            if i+1 < 4:
+                penalty += abs(current - logger(board[i+1][j])) * multiplikator
+
+                if current == board[i+1][j] and current != 0:
+                    points += 2*current
+
+    pr = positionRanking/math.log(2)
+    po = points * logger(maxTile(board)) * 3
+    pe = penalty * logger(maxTile(board))
+
+    print("Position ranking: " + str(pr))
+    print("Points: " + str(po))
+    print("Penalty: " + str(pe))
+
+    return pr + getEmptyTiles(board) * getEmptyTiles(board)
+
+def maxTile(board):
+    res = 0
+    for i in range(4):
+        for j in range(4):
+            if board[i][j] > res:
+                res = board[i][j]
+    return res
+
+def boardRanking(board):
+
+    positionRanking = 0
+
+    for i in range(4):
+        for j in range(4):
+            positionRanking += abs(R[i][j] * pow(board[i][j], 2))
 
     penalty = 0
     multiplikator = 2
