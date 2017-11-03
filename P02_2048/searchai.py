@@ -39,15 +39,15 @@ def score_toplevel_move(move, board):
         return 0
 
     if empty_tiles_count(newboard) > 5:
-        score = expectimax(newboard, 2, 1)  #1
-    else:
         score = expectimax(newboard, 3, 1)  #1
+    else:
+        score = expectimax(newboard, 4, 1)  #1
 
     return score
 
 def expectimax(board, depth, step):
     if depth == 0:
-        return boardRanking(board)
+        return calc_score(board)
 
     elif step == 1:
         score = 0
