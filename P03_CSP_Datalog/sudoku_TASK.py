@@ -55,17 +55,41 @@ for x in range(3):  # over rows of boxes
                 box.append(rownames[x*3 + i] + colnames[y*3 + j])
         boxes.append(box)
 
-
 # ------------------------------------------------------------------------------
 # formulate sudoku as CSP
 # ------------------------------------------------------------------------------
 sudoku = csp.Problem()
 
+for row in range(9):
+    for col in range(9):
+        domain = []
 
+        if(riddle[row][col] != 0):
+            domain = [riddle[row][col]]
+        else:
+            domain = [1,2,3,4,5,6,7,8,9]
+
+        sudoku.addVariable(rows[row][col], domain)
+
+for col in cols:
+    sudoku.addConstraint(csp.AllDifferentConstraint(), col)
+
+for row in rows:
+    sudoku.addConstraint(csp.AllDifferentConstraint(), row)
+
+for box in boxes:
+    sudoku.addConstraint(csp.AllDifferentConstraint(), box)
 
 # ------------------------------------------------------------------------------
 # solve CSP
 # ------------------------------------------------------------------------------
 solutions = sudoku.getSolutions()
 
+resRiddle = riddle
 
+for row in rows:
+    for field in row:
+        resRiddle[rows.index(row)][row.index(field)] = solutions[0][field]
+
+for i in resRiddle:
+    print(str(i))
