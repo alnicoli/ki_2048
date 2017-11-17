@@ -18,7 +18,7 @@ texts = pa.read_csv('texts.csv', sep='\t', encoding='utf-8')
 suspect = 'Quandt Katarina'
 company_Board = ['Soltau Kristine', 'Eder Eva', 'Michael Jill']
 
-pyDatalog.create_terms('knows','has_link','many_more_needed', 'X', 'Y', 'Z')
+pyDatalog.create_terms('knows','has_link','many_more_needed', 'X', 'Y', 'Z', 'P', 'P2', 'paths', 'path_with_cost', 'C', 'C2')
 pyDatalog.clear()
 
 # First treat calls simply as social links (denoted knows), which have no date
@@ -46,15 +46,17 @@ has_link(X,Y) <= knows(X,Z) & has_link(Z,Y) & (X!=Y)
 #   if a knows b, there is a path between a and b
 #   (X._not_in(P2)) is used to check wether x is not in path P2
 #   (P==P2+[Z]) declares P as a new path containing P2 and Z
+paths(X,Y,P) <= paths(X,Z,P2) & knows(Y ,Z) & (X != Y) & (X._not_in(P2)) & (Y._not_in(P2)) & (P==P2+[Z])
+paths(X,Y,P) <= knows(X,Y) & (P==[])
 
+#print(paths(suspect, company_Board[1], P))
 
+# Task 4: There are so many path, therefore we are only interested in short paths.
+# find all the paths between the suspect and the company board, which contain five people or less
+path_with_cost(X,Y,P,C) <= path_with_cost(X,Z,P2,C2) & knows(Z,Y) & (X!=Y) & (X._not_in(P2)) & (Y._not_in(P2)) & (P==P2+[Z]) & (C==C2+1) & (C <= 5)
+path_with_cost(X,Y,P,C) <= knows(X,Y) & (P==[]) & (C==0)
 
-
-# Task 4: There are so many path, therefore we are only interested in short pahts.
-# find all the paths between the suspect and the company board, which contain five poeple or less
-
-
-
+print (path_with_cost(suspect,company_Board[1],P,C))
 
 # ---------------------------------------------------------------------------
 # Call-Data analysis:
@@ -74,23 +76,16 @@ for i in range(0,50): # texts
 called(X,Y,Z) <= called(Y,X,Z) # calls are bi-directional
 
 
-
 # Task 5: we are are again interested in links, but this time a connection only valid the links are descending in date
 # find out who could have actually sent an information, when imposing this new restriction
 # Hints:
 #   You are allowed to naively compare the dates lexicographically using ">" and "<"; it works in this example of concrete dates (but is of course evil in general)
 
 
-
-
 # Task 6: at last find all the communication paths which lead to the suspect, again with the restriction that the dates have to be ordered correctly
 
 
-
-
 # Final task: after seeing this information, who, if anybody, do you think has given a tipp to the suspect?
-
-
 
 
 # General hint (only use on last resort!):
