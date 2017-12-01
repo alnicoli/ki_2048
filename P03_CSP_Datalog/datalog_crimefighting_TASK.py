@@ -25,8 +25,6 @@ pyDatalog.clear()
 for i in range(0,50):
     +knows(calls.iloc[i,1], calls.iloc[i,2])
 
-
-
 # Task 1: Knowing someone is a bi-directional relationship -> define the predicate accordingly
 knows(X,Y) <= knows(Y,X)
 
@@ -36,10 +34,10 @@ knows(X,Y) <= knows(Y,X)
 #   assert (has_link('Quandt Katarina', company_Board[0]))
 #   assert (has_link('Quandt Katarina', company_Board[1]))
 #   assert (has_link('Quandt Katarina', company_Board[2]))
-has_link(X,Y) <= knows(Y,X)
-has_link(X,Y) <= knows(X,Z) & has_link(Z,Y) & (X!=Y)
+has_link(X,Y) <= knows(X,Y)
+has_link(X,Y) <= has_link(X,Z) & knows(Z,Y) & (X!=Y)
 
-
+#print(has_link(suspect, company_Board[1]))
 
 # Task 3: You already know that a connection exists; now give the concrete paths between the board members and the suspect
 # Hints:
@@ -56,15 +54,13 @@ paths(X,Y,P) <= knows(X,Y) & (P==[])
 path_with_cost(X,Y,P,C) <= path_with_cost(X,Z,P2,C2) & knows(Z,Y) & (X!=Y) & (X._not_in(P2)) & (Y._not_in(P2)) & (P==P2+[Z]) & (C==C2+1) & (C <= 5)
 path_with_cost(X,Y,P,C) <= knows(X,Y) & (P==[]) & (C==0)
 
-print (path_with_cost(suspect,company_Board[1],P,C))
-
 # ---------------------------------------------------------------------------
 # Call-Data analysis:
 # Now we use the text and the calls data together their corresponding dates
 # ---------------------------------------------------------------------------
 date_board_decision = '12.2.2017'
 date_shares_bought = '23.2.2017'
-pyDatalog.create_terms('called,texted')
+pyDatalog.create_terms('called,texted,date_has_link_called,date_has_link_texted,D,D2,path_final,contacted')
 pyDatalog.clear()
 
 for i in range(0,50): # calls
@@ -76,17 +72,30 @@ for i in range(0,50): # texts
 called(X,Y,Z) <= called(Y,X,Z) # calls are bi-directional
 
 
-# Task 5: we are are again interested in links, but this time a connection only valid the links are descending in date
+# Task 5: we are again interested in links, but this time a connection is only valid if the links are descending in date
 # find out who could have actually sent an information, when imposing this new restriction
 # Hints:
 #   You are allowed to naively compare the dates lexicographically using ">" and "<"; it works in this example of concrete dates (but is of course evil in general)
+date_has_link_called(X,Y,D) <= called(X,Y,D)
+date_has_link_called(X,Y,D) <= date_has_link_called(X,Z,D2) & called(Z,Y,D) & (X!=Y) & (D <= D2)
 
+date_has_link_texted(X,Y,D) <= texted(X,Y,D)
+date_has_link_texted(X,Y,D) <= date_has_link_texted(X,Z,D2) & texted(Z,Y,D) & (X!=Y) & (D <= D2)
+
+contacted(X,Y,D) <= called(X,Y,D)
+contacted(X,Y,D) <= texted(X,Y,D)
+
+print(contacted(suspect,Y,D))
 
 # Task 6: at last find all the communication paths which lead to the suspect, again with the restriction that the dates have to be ordered correctly
+#path_called(X,Y,P,D) <= path_called(X,Z,P2,D2) & called(Y,Z,D) & (X!=Y) & (Y._not_in(P2)) & (P==P2+[Y]) & (D <= D2)
+path_final(X,Y,P,D) <= path_final(X,Z,P2,D2) & contacted(Y ,Z, D) & (X != Y) & (X._not_in(P2)) & (Y._not_in(P2)) & (P==P2+[Z]) & (D <= D2)
+path_final(X,Y,P,D) <= contacted(X,Y,D) & (P==[])
 
-
+print(path_final(suspect,company_Board[1],P,D))
 # Final task: after seeing this information, who, if anybody, do you think has given a tipp to the suspect?
 
+# Eder Eva
 
 # General hint (only use on last resort!):
 #   if nothing else helped, have a look at https://github.com/pcarbonn/pyDatalog/blob/master/pyDatalog/examples/graph.py
